@@ -1,3 +1,0 @@
-C:\Users\tolstovrs\source\repos\lab5\lab5\Debug\lab5.vcxproj.AssemblyReference.cache
-C:\Users\tolstovrs\source\repos\lab5\lab5\Debug\lab5.MyForm.resources
-C:\Users\tolstovrs\source\repos\lab5\lab5\Debug\lab5.vcxproj.GenerateResource.cache
