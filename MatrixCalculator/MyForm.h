@@ -421,6 +421,7 @@ namespace MatrixCalculator {
 			this->diffButton->TabIndex = 2;
 			this->diffButton->Text = L"Разность";
 			this->diffButton->UseVisualStyleBackColor = true;
+			this->diffButton->Click += gcnew System::EventHandler(this, &MyForm::diffButton_Click);
 			// 
 			// sumButton
 			// 
@@ -432,6 +433,7 @@ namespace MatrixCalculator {
 			this->sumButton->TabIndex = 1;
 			this->sumButton->Text = L"Сумма";
 			this->sumButton->UseVisualStyleBackColor = true;
+			this->sumButton->Click += gcnew System::EventHandler(this, &MyForm::sumButton_Click);
 			// 
 			// matrixMultiplyButton
 			// 
@@ -698,6 +700,7 @@ namespace MatrixCalculator {
 			}
 			else	this->inputExtraErrorProvider->Text = "Ошибка удаления строк";
 		}
+		CheckControls();
 	}
 
 	private: System::Void addColumnExtraButton_Click(System::Object^ sender, System::EventArgs^ e) {
@@ -859,6 +862,124 @@ namespace MatrixCalculator {
 		}
 
 		this->outputErrorProvider->Text = "Ранг = " + rankOfMatrix(matrix);
+	}
+
+	// Sum of matrices
+	std::vector<std::vector<int>> addMatrices(const std::vector<std::vector<int>>& A, const std::vector<std::vector<int>>& B) {
+		int rows = A.size();
+		int cols = A[0].size();
+		std::vector<std::vector<int>> result(rows, std::vector<int>(cols));
+
+		for (int i = 0; i < rows; ++i) {
+			for (int j = 0; j < cols; ++j) {
+				result[i][j] = A[i][j] + B[i][j];
+			}
+		}
+		return result;
+	}
+
+
+	private: System::Void sumButton_Click(System::Object^ sender, System::EventArgs^ e) {
+		ClearAll();
+		this->matrixOutput->RowCount = this->matrixInputInitial->RowCount;
+		this->matrixOutput->ColumnCount = this->matrixInputInitial->ColumnCount;
+		
+		std::vector<std::vector<int>> matrixInitial;
+		for (int i = 0; i < this->matrixInputInitial->RowCount; ++i) {
+			std::vector<int> row;
+			for (int j = 0; j < this->matrixInputInitial->ColumnCount; ++j) {
+				int value;
+				if (!Int32::TryParse(System::Convert::ToString(this->matrixInputInitial->Rows[matrixInputInitial->RowCount - i - 1]->Cells[j]->Value), value)) {
+					this->inputInitialErrorProvider->Text = "В матрице есть не целые числа!";
+					return;
+				}
+				row.push_back(value);
+			}
+
+			matrixInitial.push_back(row);
+		}
+
+		std::vector<std::vector<int>> matrixExtra;
+		for (int i = 0; i < this->matrixInputExtra->RowCount; ++i) {
+			std::vector<int> row;
+			for (int j = 0; j < this->matrixInputExtra->ColumnCount; ++j) {
+				int value;
+				if (!Int32::TryParse(System::Convert::ToString(this->matrixInputExtra->Rows[matrixInputExtra->RowCount - i - 1]->Cells[j]->Value), value)) {
+					this->inputExtraErrorProvider->Text = "В матрице есть не целые числа!";
+					return;
+				}
+				row.push_back(value);
+			}
+
+			matrixExtra.push_back(row);
+		}
+
+		std::vector<std::vector<int>> matrixResult = addMatrices(matrixInitial, matrixExtra);
+
+		for (int j = 0; j < this->matrixOutput->ColumnCount; ++j) {
+			for (int i = 0; i < this->matrixOutput->RowCount; ++i) {
+				this->matrixOutput->Rows[matrixInputInitial->RowCount - i - 1]->Cells[j]->Value = matrixResult[i][j];
+			}
+		}
+	}
+
+	// Diff of matrices
+	std::vector<std::vector<int>> diffMatrices(const std::vector<std::vector<int>>& A, const std::vector<std::vector<int>>& B) {
+		int rows = A.size();
+		int cols = A[0].size();
+		std::vector<std::vector<int>> result(rows, std::vector<int>(cols));
+
+		for (int i = 0; i < rows; ++i) {
+			for (int j = 0; j < cols; ++j) {
+				result[i][j] = A[i][j] - B[i][j];
+			}
+		}
+		return result;
+	}
+
+
+	private: System::Void diffButton_Click(System::Object^ sender, System::EventArgs^ e) {
+		ClearAll();
+		this->matrixOutput->RowCount = this->matrixInputInitial->RowCount;
+		this->matrixOutput->ColumnCount = this->matrixInputInitial->ColumnCount;
+
+		std::vector<std::vector<int>> matrixInitial;
+		for (int i = 0; i < this->matrixInputInitial->RowCount; ++i) {
+			std::vector<int> row;
+			for (int j = 0; j < this->matrixInputInitial->ColumnCount; ++j) {
+				int value;
+				if (!Int32::TryParse(System::Convert::ToString(this->matrixInputInitial->Rows[matrixInputInitial->RowCount - i - 1]->Cells[j]->Value), value)) {
+					this->inputInitialErrorProvider->Text = "В матрице есть не целые числа!";
+					return;
+				}
+				row.push_back(value);
+			}
+
+			matrixInitial.push_back(row);
+		}
+
+		std::vector<std::vector<int>> matrixExtra;
+		for (int i = 0; i < this->matrixInputExtra->RowCount; ++i) {
+			std::vector<int> row;
+			for (int j = 0; j < this->matrixInputExtra->ColumnCount; ++j) {
+				int value;
+				if (!Int32::TryParse(System::Convert::ToString(this->matrixInputExtra->Rows[matrixInputExtra->RowCount - i - 1]->Cells[j]->Value), value)) {
+					this->inputExtraErrorProvider->Text = "В матрице есть не целые числа!";
+					return;
+				}
+				row.push_back(value);
+			}
+
+			matrixExtra.push_back(row);
+		}
+
+		std::vector<std::vector<int>> matrixResult = diffMatrices(matrixInitial, matrixExtra);
+
+		for (int j = 0; j < this->matrixOutput->ColumnCount; ++j) {
+			for (int i = 0; i < this->matrixOutput->RowCount; ++i) {
+				this->matrixOutput->Rows[matrixInputInitial->RowCount - i - 1]->Cells[j]->Value = matrixResult[i][j];
+			}
+		}
 	}
 };
 }
