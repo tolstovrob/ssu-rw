@@ -363,6 +363,7 @@ namespace MatrixCalculator {
 			this->rankButton->TabIndex = 7;
 			this->rankButton->Text = L"Ранг";
 			this->rankButton->UseVisualStyleBackColor = true;
+			this->rankButton->Click += gcnew System::EventHandler(this, &MyForm::rankButton_Click);
 			// 
 			// determinateButton
 			// 
@@ -797,7 +798,67 @@ namespace MatrixCalculator {
 			matrix.push_back(row);
 		}
 
-		this->outputErrorProvider->Text = "det = " + determinant(matrix);
+		this->outputErrorProvider->Text = "Определитель = " + determinant(matrix);
+	}
+
+	// Calculate rank
+	int rankOfMatrix(std::vector<std::vector<int>>& matrix) {
+		int m = matrix.size();
+		if (m == 0) return 0; // Если матрица пустая
+		int n = matrix[0].size();
+
+		int rank = 0; // Начальный ранг
+		for (int col = 0; col < n; ++col) {
+			// Находим строку с ненулевым элементом в текущем столбце
+			int pivotRow = -1;
+			for (int row = rank; row < m; ++row) {
+				if (matrix[row][col] != 0) {
+					pivotRow = row;
+					break;
+				}
+			}
+
+			// Если не нашли ненулевой элемент, переходим к следующему столбцу
+			if (pivotRow == -1) continue;
+
+			// Меняем местами текущую строку с найденной строкой с ненулевым элементом
+			swap(matrix[rank], matrix[pivotRow]);
+
+			// Приводим остальные строки к нулю в этом столбце
+			for (int row = 0; row < m; ++row) {
+				if (row != rank) {
+					double factor = matrix[row][col] / matrix[rank][col];
+					for (int j = col; j < n; ++j) {
+						matrix[row][j] -= factor * matrix[rank][j];
+					}
+				}
+			}
+
+			rank++; // Увеличиваем ранг после обработки текущего столбца
+		}
+
+		return rank;
+	}
+
+
+	private: System::Void rankButton_Click(System::Object^ sender, System::EventArgs^ e) {
+		ClearAll();
+		std::vector<std::vector<int>> matrix;
+		for (int i = 0; i < this->matrixInputInitial->RowCount; ++i) {
+			std::vector<int> row;
+			for (int j = 0; j < this->matrixInputInitial->ColumnCount; ++j) {
+				int value;
+				if (!Int32::TryParse(System::Convert::ToString(this->matrixInputInitial->Rows[matrixInputInitial->RowCount - i - 1]->Cells[j]->Value), value)) {
+					this->inputInitialErrorProvider->Text = "В матрице есть не целые числа!";
+					return;
+				}
+				row.push_back(value);
+			}
+
+			matrix.push_back(row);
+		}
+
+		this->outputErrorProvider->Text = "Ранг = " + rankOfMatrix(matrix);
 	}
 };
 }
