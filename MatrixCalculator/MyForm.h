@@ -137,8 +137,11 @@ namespace MatrixCalculator {
 			this->matrixInputInitial->AllowUserToAddRows = false;
 			this->matrixInputInitial->AllowUserToDeleteRows = false;
 			this->matrixInputInitial->ColumnHeadersHeightSizeMode = System::Windows::Forms::DataGridViewColumnHeadersHeightSizeMode::AutoSize;
+			this->matrixInputInitial->ColumnHeadersVisible = false;
 			this->matrixInputInitial->Location = System::Drawing::Point(23, 56);
 			this->matrixInputInitial->Name = L"matrixInputInitial";
+			this->matrixInputInitial->RowHeadersVisible = false;
+			this->matrixInputInitial->RowHeadersWidth = 18;
 			this->matrixInputInitial->Size = System::Drawing::Size(384, 294);
 			this->matrixInputInitial->TabIndex = 0;
 			// 
@@ -147,8 +150,11 @@ namespace MatrixCalculator {
 			this->matrixInputExtra->AllowUserToAddRows = false;
 			this->matrixInputExtra->AllowUserToDeleteRows = false;
 			this->matrixInputExtra->ColumnHeadersHeightSizeMode = System::Windows::Forms::DataGridViewColumnHeadersHeightSizeMode::AutoSize;
+			this->matrixInputExtra->ColumnHeadersVisible = false;
 			this->matrixInputExtra->Location = System::Drawing::Point(576, 56);
 			this->matrixInputExtra->Name = L"matrixInputExtra";
+			this->matrixInputExtra->RowHeadersVisible = false;
+			this->matrixInputExtra->RowHeadersWidth = 18;
 			this->matrixInputExtra->Size = System::Drawing::Size(386, 294);
 			this->matrixInputExtra->TabIndex = 1;
 			// 
@@ -368,6 +374,7 @@ namespace MatrixCalculator {
 			this->determinateButton->TabIndex = 6;
 			this->determinateButton->Text = L"Определитель";
 			this->determinateButton->UseVisualStyleBackColor = true;
+			this->determinateButton->Click += gcnew System::EventHandler(this, &MyForm::determinateButton_Click);
 			// 
 			// transposeButton
 			// 
@@ -424,7 +431,6 @@ namespace MatrixCalculator {
 			this->sumButton->TabIndex = 1;
 			this->sumButton->Text = L"Сумма";
 			this->sumButton->UseVisualStyleBackColor = true;
-			this->sumButton->Click += gcnew System::EventHandler(this, &MyForm::sumButton_Click);
 			// 
 			// matrixMultiplyButton
 			// 
@@ -476,8 +482,11 @@ namespace MatrixCalculator {
 			this->matrixOutput->AllowUserToAddRows = false;
 			this->matrixOutput->AllowUserToDeleteRows = false;
 			this->matrixOutput->ColumnHeadersHeightSizeMode = System::Windows::Forms::DataGridViewColumnHeadersHeightSizeMode::AutoSize;
+			this->matrixOutput->ColumnHeadersVisible = false;
 			this->matrixOutput->Location = System::Drawing::Point(23, 56);
 			this->matrixOutput->Name = L"matrixOutput";
+			this->matrixOutput->RowHeadersVisible = false;
+			this->matrixOutput->RowHeadersWidth = 18;
 			this->matrixOutput->Size = System::Drawing::Size(384, 294);
 			this->matrixOutput->TabIndex = 0;
 			// 
@@ -718,14 +727,8 @@ namespace MatrixCalculator {
 	}
 
 	// Actions
-	private: System::Void sumButton_Click(System::Object^ sender, System::EventArgs^ e) {
-		ClearAll();
-		if ((this->matrixInputInitial->ColumnCount != this->matrixInputExtra->ColumnCount) ||
-			(this->matrixInputInitial->RowCount != this->matrixInputExtra->RowCount)) {
-			this->outputErrorProvider->Text = "Матрицы разных размеров!";
-		}
-	}
-
+	
+	// Transpose matrix
 	private: System::Void transposeButton_Click(System::Object^ sender, System::EventArgs^ e) {
 		ClearAll();
 		this->matrixOutput->RowCount = this->matrixInputInitial->ColumnCount;
@@ -742,6 +745,59 @@ namespace MatrixCalculator {
 				}
 			}
 		}
+	}
+
+	// Calculate determinant
+	int determinant(const std::vector<std::vector<int>>& matrix) {
+		int n = matrix.size();
+
+		// Базовые случаи
+		if (n == 1) {
+			return matrix[0][0];
+		}
+		if (n == 2) {
+			return - matrix[0][0] * matrix[1][1] + matrix[0][1] * matrix[1][0];
+		}
+
+		int det = 0;
+		for (int col = 0; col < n; ++col) {
+			// Создаем подматрицу без первой строки и текущего столбца
+			std::vector<std::vector<int>> subMatrix(n - 1, std::vector<int>(n - 1));
+			for (int i = 1; i < n; ++i) {
+				for (int j = 0; j < n; ++j) {
+					if (j < col) {
+						subMatrix[i - 1][j] = matrix[i][j];
+					}
+					else if (j > col) {
+						subMatrix[i - 1][j - 1] = matrix[i][j];
+					}
+				}
+			}
+			// Рекурсивно вычисляем определитель подматрицы
+			det += (col % 2 == 0 ? 1 : -1) * matrix[0][col] * determinant(subMatrix);
+		}
+
+		return det;
+	}
+
+	private: System::Void determinateButton_Click(System::Object^ sender, System::EventArgs^ e) {
+		ClearAll();
+		std::vector<std::vector<int>> matrix;
+		for (int i = 0; i < this->matrixInputInitial->RowCount; ++i) {
+			std::vector<int> row;
+			for (int j = 0; j < this->matrixInputInitial->ColumnCount; ++j) {
+				int value;
+				if (!Int32::TryParse(System::Convert::ToString(this->matrixInputInitial->Rows[matrixInputInitial->RowCount - i - 1]->Cells[j]->Value), value)) {
+					this->inputInitialErrorProvider->Text = "В матрице есть не целые числа!";
+					return;
+				}
+				row.push_back(value);
+			}
+
+			matrix.push_back(row);
+		}
+
+		this->outputErrorProvider->Text = "det = " + determinant(matrix);
 	}
 };
 }

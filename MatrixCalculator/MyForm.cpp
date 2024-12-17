@@ -1,3 +1,5 @@
+#include <cmath>
+#include <vector>
 #include "MyForm.h"
 
 using namespace System;
