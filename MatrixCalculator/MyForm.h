@@ -414,6 +414,7 @@ namespace MatrixCalculator {
 			this->vectorMultiplyButton->TabIndex = 4;
 			this->vectorMultiplyButton->Text = L"Векторное произведение";
 			this->vectorMultiplyButton->UseVisualStyleBackColor = true;
+			this->vectorMultiplyButton->Click += gcnew System::EventHandler(this, &MyForm::vectorMultiplyButton_Click);
 			// 
 			// scalarMultiplyButton
 			// 
@@ -518,6 +519,8 @@ namespace MatrixCalculator {
 			this->Controls->Add(this->outputGroup);
 			this->Controls->Add(this->actionsGroup);
 			this->Controls->Add(this->inputGroup);
+			this->MaximumSize = System::Drawing::Size(1673, 612);
+			this->MinimumSize = System::Drawing::Size(1673, 612);
 			this->Name = L"MyForm";
 			this->Text = L"MatrixCalculator";
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->matrixInputInitial))->EndInit();
@@ -580,9 +583,9 @@ namespace MatrixCalculator {
 		}
 
 		if ((matrixInputInitialRows == matrixInputExtraRows) &&
-			(matrixInputInitialRows == matrixInputExtraColumns) &&
-			(matrixInputInitialRows == matrixInputInitialColumns) &&
-			(matrixInputInitialRows == 3)) {
+			(matrixInputInitialRows == 3) &&
+			(matrixInputInitialColumns == matrixInputInitialColumns) &&
+			(matrixInputInitialColumns == 1)) {
 			this->vectorMultiplyButton->Enabled = true;
 		}
 	}
@@ -1157,6 +1160,49 @@ namespace MatrixCalculator {
 
 		int matrixResult = dotProduct(matrixInitial, matrixExtra);
 		this->outputErrorProvider->Text = "Скалярное произведение = " + matrixResult;
+	}
+
+	// Vector multiplying
+	std::vector<int> crossProduct(const std::vector<int>& vector1, const std::vector<int>& vector2) {
+		std::vector<int> result(3);
+
+		result[0] = vector1[1] * vector2[2] - vector1[2] * vector2[1];
+		result[1] = vector1[2] * vector2[0] - vector1[0] * vector2[2];
+		result[2] = vector1[0] * vector2[1] - vector1[1] * vector2[0];
+
+		return result;
+	}
+
+
+	private: System::Void vectorMultiplyButton_Click(System::Object^ sender, System::EventArgs^ e) {
+		ClearAll();
+		this->matrixOutput->RowCount = this->matrixInputInitial->RowCount;
+		this->matrixOutput->ColumnCount = this->matrixInputInitial->ColumnCount;
+
+		std::vector<int> matrixInitial;
+		for (int i = 0; i < this->matrixInputInitial->RowCount; ++i) {
+			int value;
+			if (!Int32::TryParse(System::Convert::ToString(this->matrixInputInitial->Rows[matrixInputInitial->RowCount - i - 1]->Cells[0]->Value), value)) {
+				this->inputInitialErrorProvider->Text = "В матрице есть не целые числа!";
+				return;
+			}
+			matrixInitial.push_back(value);
+		}
+
+		std::vector<int> matrixExtra;
+		for (int i = 0; i < this->matrixInputExtra->RowCount; ++i) {
+			int value;
+			if (!Int32::TryParse(System::Convert::ToString(this->matrixInputExtra->Rows[matrixInputExtra->RowCount - i - 1]->Cells[0]->Value), value)) {
+				this->inputExtraErrorProvider->Text = "В матрице есть не целые числа!";
+				return;
+			}
+			matrixExtra.push_back(value);
+		}
+
+		std::vector<int> matrixResult = crossProduct(matrixInitial, matrixExtra);
+		for (int i = 0; i < this->matrixOutput->RowCount; ++i) {
+			this->matrixOutput->Rows[matrixInputInitial->RowCount - i - 1]->Cells[0]->Value = matrixResult[i];
+		}
 	}
 };
 }
