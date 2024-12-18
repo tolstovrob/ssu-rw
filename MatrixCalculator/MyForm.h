@@ -425,6 +425,7 @@ namespace MatrixCalculator {
 			this->scalarMultiplyButton->TabIndex = 3;
 			this->scalarMultiplyButton->Text = L"Скалярное произведение";
 			this->scalarMultiplyButton->UseVisualStyleBackColor = true;
+			this->scalarMultiplyButton->Click += gcnew System::EventHandler(this, &MyForm::scalarMultiplyButton_Click);
 			// 
 			// diffButton
 			// 
@@ -1119,6 +1120,43 @@ namespace MatrixCalculator {
 				this->matrixOutput->Rows[matrixInputInitial->RowCount - i - 1]->Cells[j]->Value = matrixResult[i][j];
 			}
 		}
+	}
+
+	// scalar Multiplying
+	int dotProduct(const std::vector<int>& vector1, const std::vector<int>& vector2) {
+		int result = 0;
+
+		for (size_t i = 0; i < vector1.size(); ++i) {
+			result += vector1[i] * vector2[i];
+		}
+
+		return result;
+	}
+
+	private: System::Void scalarMultiplyButton_Click(System::Object^ sender, System::EventArgs^ e) {
+		ClearAll();
+		std::vector<int> matrixInitial;
+		for (int i = 0; i < this->matrixInputInitial->RowCount; ++i) {
+			int value;
+			if (!Int32::TryParse(System::Convert::ToString(this->matrixInputInitial->Rows[matrixInputInitial->RowCount - i - 1]->Cells[0]->Value), value)) {
+				this->inputInitialErrorProvider->Text = "В матрице есть не целые числа!";
+				return;
+			}
+			matrixInitial.push_back(value);
+		}
+
+		std::vector<int> matrixExtra;
+		for (int i = 0; i < this->matrixInputExtra->RowCount; ++i) {
+			int value;
+			if (!Int32::TryParse(System::Convert::ToString(this->matrixInputExtra->Rows[matrixInputExtra->RowCount - i - 1]->Cells[0]->Value), value)) {
+				this->inputExtraErrorProvider->Text = "В матрице есть не целые числа!";
+				return;
+			}
+			matrixExtra.push_back(value);
+		}
+
+		int matrixResult = dotProduct(matrixInitial, matrixExtra);
+		this->outputErrorProvider->Text = "Скалярное произведение = " + matrixResult;
 	}
 };
 }
