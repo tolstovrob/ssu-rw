@@ -113,6 +113,7 @@ namespace MatrixCalculator {
 			this->vectorLabel = (gcnew System::Windows::Forms::Label());
 			this->initialMatrixLabel = (gcnew System::Windows::Forms::Label());
 			this->actionsGroup = (gcnew System::Windows::Forms::GroupBox());
+			this->numericMultiplyButton = (gcnew System::Windows::Forms::Button());
 			this->rankButton = (gcnew System::Windows::Forms::Button());
 			this->determinateButton = (gcnew System::Windows::Forms::Button());
 			this->transposeButton = (gcnew System::Windows::Forms::Button());
@@ -125,7 +126,6 @@ namespace MatrixCalculator {
 			this->outputErrorProvider = (gcnew System::Windows::Forms::TextBox());
 			this->outputMatrixLabel = (gcnew System::Windows::Forms::Label());
 			this->matrixOutput = (gcnew System::Windows::Forms::DataGridView());
-			this->numericMultiplyButton = (gcnew System::Windows::Forms::Button());
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->matrixInputInitial))->BeginInit();
 			(cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->matrixInputExtra))->BeginInit();
 			this->inputGroup->SuspendLayout();
@@ -357,6 +357,18 @@ namespace MatrixCalculator {
 			this->actionsGroup->TabStop = false;
 			this->actionsGroup->Text = L"Действия";
 			// 
+			// numericMultiplyButton
+			// 
+			this->numericMultiplyButton->Enabled = false;
+			this->numericMultiplyButton->Font = (gcnew System::Drawing::Font(L"Cambria", 11));
+			this->numericMultiplyButton->Location = System::Drawing::Point(293, 30);
+			this->numericMultiplyButton->Name = L"numericMultiplyButton";
+			this->numericMultiplyButton->Size = System::Drawing::Size(131, 46);
+			this->numericMultiplyButton->TabIndex = 8;
+			this->numericMultiplyButton->Text = L"Числовое произведение";
+			this->numericMultiplyButton->UseVisualStyleBackColor = true;
+			this->numericMultiplyButton->Click += gcnew System::EventHandler(this, &MyForm::numericMultiplyButton_Click);
+			// 
 			// rankButton
 			// 
 			this->rankButton->Font = (gcnew System::Drawing::Font(L"Cambria", 11));
@@ -496,17 +508,6 @@ namespace MatrixCalculator {
 			this->matrixOutput->RowHeadersWidth = 18;
 			this->matrixOutput->Size = System::Drawing::Size(384, 294);
 			this->matrixOutput->TabIndex = 0;
-			// 
-			// numericMultiplyButton
-			// 
-			this->numericMultiplyButton->Enabled = false;
-			this->numericMultiplyButton->Font = (gcnew System::Drawing::Font(L"Cambria", 11));
-			this->numericMultiplyButton->Location = System::Drawing::Point(293, 30);
-			this->numericMultiplyButton->Name = L"numericMultiplyButton";
-			this->numericMultiplyButton->Size = System::Drawing::Size(131, 46);
-			this->numericMultiplyButton->TabIndex = 8;
-			this->numericMultiplyButton->Text = L"Числовое произведение";
-			this->numericMultiplyButton->UseVisualStyleBackColor = true;
 			// 
 			// MyForm
 			// 
@@ -1056,6 +1057,62 @@ namespace MatrixCalculator {
 		}
 
 		std::vector<std::vector<int>> matrixResult = multiplyMatrices(matrixInitial, matrixExtra);
+
+		for (int j = 0; j < this->matrixOutput->ColumnCount; ++j) {
+			for (int i = 0; i < this->matrixOutput->RowCount; ++i) {
+				this->matrixOutput->Rows[matrixInputInitial->RowCount - i - 1]->Cells[j]->Value = matrixResult[i][j];
+			}
+		}
+	}
+
+	// Numeric multiplying
+	std::vector<std::vector<int>> multiplyMatrixByNumber(const std::vector<std::vector<int>>& matrix, int number) {
+		std::vector<std::vector<int>> result = matrix;
+		for (auto& row : result) {
+			for (int& element : row) {
+				element *= number;
+			}
+		}
+
+		return result;
+	}
+
+	private: System::Void numericMultiplyButton_Click(System::Object^ sender, System::EventArgs^ e) {
+		ClearAll();
+		this->matrixOutput->RowCount = this->matrixInputInitial->RowCount;
+		this->matrixOutput->ColumnCount = this->matrixInputInitial->ColumnCount;
+
+		std::vector<std::vector<int>> matrixInitial;
+		for (int i = 0; i < this->matrixInputInitial->RowCount; ++i) {
+			std::vector<int> row;
+			for (int j = 0; j < this->matrixInputInitial->ColumnCount; ++j) {
+				int value;
+				if (!Int32::TryParse(System::Convert::ToString(this->matrixInputInitial->Rows[matrixInputInitial->RowCount - i - 1]->Cells[j]->Value), value)) {
+					this->inputInitialErrorProvider->Text = "В матрице есть не целые числа!";
+					return;
+				}
+				row.push_back(value);
+			}
+
+			matrixInitial.push_back(row);
+		}
+
+		std::vector<std::vector<int>> matrixExtra;
+		for (int i = 0; i < this->matrixInputExtra->RowCount; ++i) {
+			std::vector<int> row;
+			for (int j = 0; j < this->matrixInputExtra->ColumnCount; ++j) {
+				int value;
+				if (!Int32::TryParse(System::Convert::ToString(this->matrixInputExtra->Rows[matrixInputExtra->RowCount - i - 1]->Cells[j]->Value), value)) {
+					this->inputExtraErrorProvider->Text = "В матрице есть не целые числа!";
+					return;
+				}
+				row.push_back(value);
+			}
+
+			matrixExtra.push_back(row);
+		}
+
+		std::vector<std::vector<int>> matrixResult = multiplyMatrixByNumber(matrixInitial, matrixExtra[0][0]);
 
 		for (int j = 0; j < this->matrixOutput->ColumnCount; ++j) {
 			for (int i = 0; i < this->matrixOutput->RowCount; ++i) {
